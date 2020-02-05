@@ -93,7 +93,7 @@ print('-' * 100)
 for i in listings:
     # print(i.prettify())
     try:
-        address = i.article.a.h3.text
+        address = i.article.a.address.text
         price = i.find('div', class_='list-card-price').text
         rent = i.find('div', class_='list-card-type').text
         print(f'{rent} at {price} - {address}')
@@ -107,8 +107,8 @@ for i in listings:
     else:
         params = {
             'zws-id': ZWSID,
-            'address': address,
-            'citystatezip': address[-5:],
+            'address': address if address[-5:].isdigit() else address.rsplit(',',2)[0],
+            'citystatezip': address[-5:] if address[-5:].isdigit() else address.rsplit(',',2)[1],
             'rentzestimate': True
         }
         r = requests.get(f'{base_url}/GetSearchResults.htm', params=params)
@@ -129,7 +129,7 @@ for i in listings:
             lowest_value = int(z['valuationRange']['low']['#text'])
             highest_value = int(z['valuationRange']['high']['#text'])
             current_value = int(z['amount']['#text'])
-            price = int(price.replace(',', '').replace('$', '').replace('/mo', ''))
+            price = int(price.replace(',', '').replace('$', '').replace('/mo', '').replace('--','0'))
             relative_value = price - current_value
             higher_than_zestimate = Fore.GREEN
             if relative_value > 0:
@@ -144,7 +144,7 @@ for i in listings:
                 pos = round((price - lowest_value) / dash_value) - 1
 
             print(f"Current Zestimate: ${current_value} (Last updated: {z['last-updated']})")
-            print(f"Zestimate change in the last 30 days: ${z['valueChange']['#text']}")
+            print(f"Zestimate change in the last 30 days: ${z['valueChange']['#text'] if z['valueChange']!=None else 0}")
             print(f'List Price relative to Zestimate: {higher_than_zestimate}{relative_value}{Style.RESET_ALL}')
             print(" " * (18 + pos) + "v")
             print(f"Valuation Range: |{'=' * num_bars}|")
