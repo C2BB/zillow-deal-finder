@@ -94,7 +94,7 @@ for i in listings:
     # print(i.prettify())
     try:
         address = i.article.a.address.text
-        price = i.find('div', class_='list-card-price').text
+        price = i.find('div', class_='list-card-price').text.replace("Est.","")
         rent = i.find('div', class_='list-card-type').text
         print(f'{rent} at {price} - {address}')
 
@@ -103,6 +103,7 @@ for i in listings:
             is_renting = True
     except:
         # Sadly the 3rd result is "Loading" every time
+        print("******SKIPPED*******")
         pass
     else:
         params = {
